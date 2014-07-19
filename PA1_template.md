@@ -1,15 +1,10 @@
----
-title: "Peer Assesment 1"
-output:
-  html_document:
-    keep_md: yes
----
 
 This is a Coursera reproducible course project. The task is to explore the statistics and patterns of the 5 minute steps taken each day, imputed the missing values for steps and exploring activity patterns for interval and during weekday and weekend.  
 
 ## Loading and preprocessing the data
 
 Assume the data is unzipped and located in the current working directory. The following codes are used to load.
+
 
 
 ```r
@@ -22,6 +17,7 @@ if(!getwd()=="C:/Users/song/Dropbox/Coursera/reproduce")
 ```
 
 The folowing steps is to process the data, main task is to change interval to time format and combine with date to make a date format variable. 
+
 
 
 ```r
@@ -49,6 +45,7 @@ The date frame steptime is the processed dataset and is ready for analysis.
 In this task,the total number of steps, mean and median of total numbers taken each is calculated after ignoring the missing values.  A histogram is also plotted. 
 
 
+
 ```r
 #1, remove NA for steps
 stepdatetime <- steptime[!is.na(steptime$steps),]
@@ -63,6 +60,9 @@ ggplot(sum_in, aes(x=steps)) + geom_histogram(binwidth=400)
 ```
 
 ![plot of chunk task 1](figure/task 1.png) 
+
+Mean and median of steps taken
+
 
 ```r
 #mean of steps taken
@@ -82,11 +82,13 @@ median(sum_in$steps)
 ## [1] 10765
 ```
 
+
 ## What is the average daily activity pattern?
 
 This task requires calculate the average steps of the 5-minute interval across all days, plot the time series graph and figure out the interval in which the maxium number of steps was taken. 
 
 The results can be seen here:
+
 
 
 ```r
@@ -98,6 +100,7 @@ plot(mean_int$interval,mean_int$steps,type='l',main='Average steps taken',xlab='
 ```
 
 ![plot of chunk task 2](figure/task 2.png) 
+
 
 ```r
 #sort steps in descending order to get the max steps interval
@@ -121,6 +124,7 @@ This task is to figure out the number of missing values and impute them using me
 First, the total number of missing values can be seen as:
 
 
+
 ```r
 nastep <-steptime[is.na(steptime$steps),]
 nrow(nastep)
@@ -131,7 +135,6 @@ nrow(nastep)
 ```
 
 Second, impute missing values using calculated mean for that 5-minute interval and create a new dataset,imputedata, with missing data filled in.
-
 
 
 ```r
@@ -164,6 +167,7 @@ head(steptime[c('steps','date','interval','daytime')],5,row.names=F)
 ## 5    NA 2012-10-01       20 2012-10-01 00:20:00
 ```
 
+
 ```r
 # first 5 rows of data after imputation.
 head(imputedata[c('steps','date','interval','daytime')],5,row.names=F)
@@ -178,7 +182,7 @@ head(imputedata[c('steps','date','interval','daytime')],5,row.names=F)
 ## 264 0.07547 2012-10-01       20 2012-10-01 00:20:00
 ```
 
-The total steps caclulation and histogram using filled in missing values can be seen as:
+The total steps caclulation and histogram using filled in values can be seen as:
  
 
 ```r
@@ -190,7 +194,7 @@ library(ggplot2)
 ggplot(sumimpute, aes(x=steps)) + geom_histogram(binwidth=400)
 ```
 
-![plot of chunk imuputation statistics](figure/imuputation statistics.png) 
+![plot of chunk imputation statistics](figure/imputation statistics.png) 
 
 Here are the mean and median steps taken summary after missing values imputation:
 
@@ -219,13 +223,14 @@ As you can see, that the mean of steps taken doesn't change while median steps c
 In this task, a new variable weekday is created with "weekday" and "weekend" two levels. A panel plot is created based on filled in datasets to show the difference in activity patterns between weekday and weekend. 
 
 
+
 ```r
 #check weekend and weekday
 week <- data.frame(weekname=weekdays(imputedata$daytime))
 weekd <- cbind(steptime,week)
 
 #create weekend and weekday 
-stepweek <-data.frame(weekday=ifelse(weekd$weekname %in% c('Saturday','Sunday'),'weekend','weekday'))
+stepweek <-data.frame(weekdaylevel=ifelse(weekd$weekname %in% c('Saturday','Sunday'),'weekend','weekday'))
 
 #create analytic data with steps, date, time, weekday 
 stepweekday<- cbind(weekd,stepweek)
@@ -236,26 +241,26 @@ Here is the data with newly created factor for weekday and weekend.
 
 ```r
 #show partial data
-head(stepweekday[1:5,c('steps','daytime','weekday')],row.names=F)
+head(stepweekday[1:5,c('steps','daytime','weekdaylevel')],row.names=F)
 ```
 
 ```
-##   steps             daytime weekday
-## 1    NA 2012-10-01 00:00:00 weekday
-## 2    NA 2012-10-01 00:05:00 weekday
-## 3    NA 2012-10-01 00:10:00 weekday
-## 4    NA 2012-10-01 00:15:00 weekday
-## 5    NA 2012-10-01 00:20:00 weekday
+##   steps             daytime weekdaylevel
+## 1    NA 2012-10-01 00:00:00      weekday
+## 2    NA 2012-10-01 00:05:00      weekday
+## 3    NA 2012-10-01 00:10:00      weekday
+## 4    NA 2012-10-01 00:15:00      weekday
+## 5    NA 2012-10-01 00:20:00      weekday
 ```
 
-The statistics using week as factor are: 
+The statistics and plots using weekdaylevel as factor are: 
 
 
 ```r
 #calculate mean steps taken by interval during weekday
-weekave <- aggregate(steps~interval,stepweekday[stepweekday$weekday=='weekday',],mean)
+weekave <- aggregate(steps~interval,stepweekday[stepweekday$weekdaylevel=='weekday',],mean)
 #calculate mean steps taken by interval during weekend
-weekendave <- aggregate(steps~interval,stepweekday[stepweekday$weekday=='weekend',],mean)
+weekendave <- aggregate(steps~interval,stepweekday[stepweekday$weekdaylevel=='weekend',],mean)
 
 #panel plots using basic R
 par(mfrow=c(2,1))
@@ -266,10 +271,9 @@ plot(weekave$interval,weekave$steps,type='l',xlab='Weekday',
 plot(weekendave$interval,weekendave$steps,type='l',xlab='Weekend',ylab='Average steps',ylim=range(0:220))
 ```
 
-![plot of chunk week statistics](figure/week statistics.png) 
+![plot of chunk task 4](figure/task 4.png) 
 
 As shown above, there are difference activity pattern during weekday and weekend.
-* steps increse starts earlier and increase higher on weekday morning than on weekend
-* steps taken during afternoon is more in weeekend than in weekday.
-* in night time steps taken decrease ealier than during weekday than in weekend.
-
+* Steps taken starts earlier and increase higher on weekday morning than on weekend
+* There are more steps taken during afternoon in weeekend than in weekday.
+* At night time steps taken decrease ealier than during weekday than in weekend.
